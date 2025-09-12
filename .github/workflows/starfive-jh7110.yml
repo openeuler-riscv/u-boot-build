@@ -11,8 +11,8 @@ jobs:
     steps:
       - name: Install Dependencies
         run: |
-          apt-get update
-          apt-get install -y gcc-riscv64-linux-gnu bc bison build-essential coccinelle \
+          sudo apt-get update
+          sudo apt-get install -y gcc-riscv64-linux-gnu bc bison build-essential coccinelle \
             device-tree-compiler dfu-util efitools flex gdisk graphviz imagemagick \
             libgnutls28-dev libguestfs-tools libncurses-dev \
             libpython3-dev libsdl2-dev libssl-dev lz4 lzma lzma-alone openssl \
