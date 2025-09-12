@@ -1,0 +1,47 @@
+on:
+  push:
+    paths:
+      - '.github/workflows/starfive-jh7110.yml'
+  workflow_dispatch:
+
+jobs:
+  starfive-jh7110:
+    name: Build U-Boot for StarFive JH7110
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: |
+          apt-get update
+          apt-get install -y gcc-riscv64-linux-gnu bc bison build-essential coccinelle \
+            device-tree-compiler dfu-util efitools flex gdisk graphviz imagemagick \
+            libgnutls28-dev libguestfs-tools libncurses-dev \
+            libpython3-dev libsdl2-dev libssl-dev lz4 lzma lzma-alone openssl \
+            pkg-config python3 python3-asteval python3-coverage python3-filelock \
+            python3-pkg-resources python3-pycryptodome python3-pyelftools \
+            python3-pytest python3-pytest-xdist python3-sphinxcontrib.apidoc \
+            python3-sphinx-rtd-theme python3-subunit python3-testtools \
+            python3-venv swig uuid-dev
+      - name: Checkout U-Boot Source
+        uses: actions/checkout@v5
+        with:
+          repository: openeuler-riscv/u-boot.git
+          ref: starfive-jh7110-upstream
+          fetch-depth: 1
+          path: u-boot
+      - name: Checkout OpenSBI Source
+        uses: actions/checkout@v5
+        with:
+          repository: riscv-software-src/opensbi.git
+          ref: v1.7
+          fetch-depth: 1
+          path: opensbi
+      - name: Build OpenSBI
+        run: |
+          mkdir -p build
+          make -C opensbi -j $(nproc) O=$(pwd)/build/opensbi CROSS_COMPILE=riscv64-linux-gnu- PLATFORM=generic FW_TEXT_START=0x40000000 FW_OPTIONS=0
+      - name: Build U-Boot
+        run: |
+          make -C u-boot -j $(nproc) O=$(pwd)/build/u-boot CROSS_COMPILE=riscv64-linux-gnu- starfive_visionfive2_defconfig
+          make -C u-boot -j $(nproc) O=$(pwd)/build/u-boot CROSS_COMPILE=riscv64-linux-gnu- OPENSBI=$(pwd)/build/opensbi/platform/generic/firmware/fw_dynamic.bin
+          make -C u-boot -j $(nproc) O=$(pwd)/build/u-boot CROSS_COMPILE=riscv64-linux-gnu- u-boot-initial-env
+          ./build/u-boot/tools/mkenvimage -s $(grep 'CONFIG_ENV_SIZE' build/u-boot/.config | cut -d '=' -f 2) -o build/u-boot/u-boot-env-default.bin build/u-boot/u-boot-initial-env
