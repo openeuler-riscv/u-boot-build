@@ -67,4 +67,5 @@ sf update ${CONFIG_SYS_LOAD_ADDR} 0x0 0x400000
 
 # Notify user
 led act on
+while true; do sleep 1; done
 EOF
