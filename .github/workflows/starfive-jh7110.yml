@@ -66,10 +66,10 @@ jobs:
           mkfs.vfat build/boofs.vfat
           mkdir mnt
           sudo mount build/boofs.vfat mnt
-          cp build/boot.scr mnt
-          cp build/u-boot/spl/u-boot-spl.bin.normal.out mnt
-          cp build/u-boot/u-boot.itb mnt
-          cp build/u-boot/u-boot-env-default.bin mnt
+          sudo cp build/boot.scr mnt
+          sudo cp build/u-boot/spl/u-boot-spl.bin.normal.out mnt
+          sudo cp build/u-boot/u-boot.itb mnt
+          sudo cp build/u-boot/u-boot-env-default.bin mnt
           sudo umount mnt
       - name: Pack Final Image
         run: |
