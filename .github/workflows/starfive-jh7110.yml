@@ -1,3 +1,5 @@
+name: StarFive JH7110
+
 on:
   push:
     paths:
@@ -45,3 +47,43 @@ jobs:
           make -C u-boot -j $(nproc) O=$(pwd)/build/u-boot CROSS_COMPILE=riscv64-linux-gnu- OPENSBI=$(pwd)/build/opensbi/platform/generic/firmware/fw_dynamic.bin
           make -C u-boot -j $(nproc) O=$(pwd)/build/u-boot CROSS_COMPILE=riscv64-linux-gnu- u-boot-initial-env
           ./build/u-boot/tools/mkenvimage -s $(grep 'CONFIG_ENV_SIZE' build/u-boot/.config | cut -d '=' -f 2) -o build/u-boot/u-boot-env-default.bin build/u-boot/u-boot-initial-env
+      - name: Checkout This Repo
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          path: u-boot-build
+      - name: Build U-Boot Boot Script
+        run: |
+          ./u-boot-build/starfive-jh7110/gen-boot-cmd.sh build/u-boot/.config build/boot.cmd
+          ./build/u-boot/tools/mkimage -T script -d build/boot.cmd build/boot.scr
+      - name: Install Dependencies for Creating SDCard Image
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y parted
+      - name: Create SDCard Firmware Updater
+        run: |
+          truncate -s 50M build/boofs.vfat
+          mkfs.vfat build/boofs.vfat
+          mkdir mnt
+          mount build/boofs.vfat mnt
+          cp build/boot.scr mnt
+          cp build/u-boot/spl/u-boot-spl.bin.normal.out mnt
+          cp build/u-boot/u-boot.itb mnt
+          cp build/u-boot/u-boot-env-default.bin mnt
+          umount mnt
+      - name: Pack Final Image
+        run: |
+          IMG_FILE="firmware_updater.sd.img"
+          truncate -s 64M "${IMG_FILE}"
+          parted -s "${IMG_FILE}" mklabel gpt
+          parted "${IMG_FILE}" mkpart primary 1M 2M
+          parted "${IMG_FILE}" name 1 SPL
+          parted "${IMG_FILE}" type 1 2E54B353-1271-4842-806F-E436D6AF6985
+          parted "${IMG_FILE}" mkpart primary 2M 8M
+          parted "${IMG_FILE}" name 2 U-boot
+          parted "${IMG_FILE}" mkpart primary 8M 100%
+          parted "${IMG_FILE}" name 3 boot
+          parted "${IMG_FILE}" set 3 legacy_boot on
+          dd if=build/u-boot/spl/u-boot-spl.bin.normal.out of="${IMG_FILE}" bs=512 seek=2048
+          dd if=build/u-boot/u-boot.itb of="${IMG_FILE}" bs=512 seek=4096
+          dd if=build/boofs.vfat of="${IMG_FILE}" bs=512 seek=16384
