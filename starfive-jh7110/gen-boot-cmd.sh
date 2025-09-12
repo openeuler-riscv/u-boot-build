@@ -63,7 +63,7 @@ fatload mmc 1:3 $(printf '0x%x\n' $((CONFIG_SYS_LOAD_ADDR+CONFIG_ENV_OFFSET))) u
 fatload mmc 1:3 $(printf '0x%x\n' $((CONFIG_SYS_LOAD_ADDR+CONFIG_SYS_SPI_U_BOOT_OFFS))) u-boot.itb 0
 
 # write to flash
-sf write ${CONFIG_SYS_LOAD_ADDR} 0x0 0x400000
+sf update ${CONFIG_SYS_LOAD_ADDR} 0x0 0x400000
 
 # Notify user
 led act on
