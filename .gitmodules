@@ -1,0 +1,6 @@
+[submodule "eswin-eic7700/firmware"]
+	path = eswin-eic7700/firmware
+	url = https://github.com/eswincomputing/Esbd-77serial-firmware.git
+[submodule "eswin-eic7700/nsign"]
+	path = eswin-eic7700/nsign
+	url = https://github.com/eswincomputing/Esbd-77serial-nsign.git
