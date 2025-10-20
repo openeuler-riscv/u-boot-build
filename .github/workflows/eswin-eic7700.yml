@@ -11,6 +11,18 @@ jobs:
   eswin-eic7700:
     name: Build U-Boot for ESWin EIC7700
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - board: milkv_megrez
+            defconfig: eic7700_milkv_megrez_defconfig
+            filename: bootloader-milkv_megrez.bin
+          - board: eswin_ebc77
+            defconfig: eic7700_sbc_defconfig
+            filename: bootloader-eswin_ebc77.bin
+          - board: hifive_premier_p550
+            defconfig: hifive_premier_p550_defconfig
+            filename: bootloader-hifive_premier_p550.bin
     steps:
       - name: Install Dependencies
         run: |
@@ -42,7 +54,7 @@ jobs:
       - name: Build U-Boot
         run: |
           mkdir -p build
-          make -C u-boot -j $(nproc) O=$(pwd)/build/u-boot CROSS_COMPILE=riscv64-linux-gnu- eic7700_milkv_megrez_defconfig
+          make -C u-boot -j $(nproc) O=$(pwd)/build/u-boot CROSS_COMPILE=riscv64-linux-gnu- ${{ matrix.defconfig }}
           make -C u-boot -j $(nproc) O=$(pwd)/build/u-boot CROSS_COMPILE=riscv64-linux-gnu-
       - name: Build OpenSBI
         run: |
@@ -63,8 +75,10 @@ jobs:
         run: |
           pushd u-boot-build/eswin-eic7700/
           ./build/src/nsign bootchain.cfg
+          mv out/bootloader.bin out/${{ matrix.filename }}
           popd
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: u-boot-build/eswin-eic7700/out/bootloader.bin
+          name: ${{ matrix.board }}
+          path: u-boot-build/eswin-eic7700/out/${{ matrix.filename }}
