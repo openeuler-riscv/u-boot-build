@@ -23,6 +23,9 @@ jobs:
           - board: hifive_premier_p550
             defconfig: hifive_premier_p550_defconfig
             filename: bootloader-hifive_premier_p550.bin
+          - board: eswin_eic7700_evb_a2
+            defconfig: eic7700_evb_a2_defconfig
+            filename: bootloader-eswin_eic7700_evb_a2.bin
     steps:
       - name: Install Dependencies
         run: |
