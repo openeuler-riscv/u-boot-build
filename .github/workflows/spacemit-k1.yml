@@ -1,0 +1,73 @@
+name: SpacemiT K1
+
+on:
+  push:
+    paths:
+      - '.github/workflows/spacemit-k1.yml'
+      - 'spacemit-k1'
+  workflow_dispatch:
+
+jobs:
+  spacemit-k1:
+    name: Build U-Boot for SpacemiT K1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-riscv64-linux-gnu bc bison build-essential coccinelle \
+            device-tree-compiler dfu-util efitools flex gdisk graphviz imagemagick \
+            libgnutls28-dev libguestfs-tools libncurses-dev \
+            libpython3-dev libsdl2-dev libssl-dev lz4 lzma lzma-alone openssl \
+            pkg-config python3 python3-asteval python3-coverage python3-filelock \
+            python3-pkg-resources python3-pycryptodome python3-pyelftools \
+            python3-pytest python3-pytest-xdist python3-sphinxcontrib.apidoc \
+            python3-sphinx-rtd-theme python3-subunit python3-testtools \
+            python3-venv swig uuid-dev u-boot-tools
+      - name: Checkout U-Boot Source
+        uses: actions/checkout@v5
+        with:
+          repository: openeuler-riscv/u-boot.git
+          ref: spacemit-k1-vendor-2022.10
+          fetch-depth: 1
+          path: u-boot
+      - name: Checkout OpenSBI Source
+        uses: actions/checkout@v5
+        with:
+          repository: bianbu-linux/opensbi.git
+          github-server-url: https://gitee.com
+          ref: k1-bl-v2.2.4-release
+          fetch-depth: 1
+          path: opensbi
+      - name: Build OpenSBI
+        run: |
+          mkdir -p build
+          make -C opensbi -j $(nproc) CROSS_COMPILE=riscv64-linux-gnu- PLATFORM=generic PLATFORM_DEFCONFIG=k1_defconfig FW_OPTIONS=0
+      - name: Build U-Boot
+        # K1 doesn't have out-of-tree build support
+        run: |
+          make -C u-boot -j $(nproc) CROSS_COMPILE=riscv64-linux-gnu- k1_defconfig
+          make -C u-boot -j $(nproc) CROSS_COMPILE=riscv64-linux-gnu-
+          make -C u-boot -j $(nproc) CROSS_COMPILE=riscv64-linux-gnu- u-boot-initial-env
+      - name: Collect Results
+        run: |
+          mkdir -p dist
+          cp opensbi/build/platform/generic/firmware/fw_dynamic.itb dist
+          cp u-boot/u-boot.itb dist
+          cp u-boot/u-boot-env-default.bin dist
+          cp u-boot/FSBL.bin dist
+          cp u-boot/bootinfo_spinor.bin dist
+          cp u-boot/bootinfo_sd.bin dist
+      - name: Checkout This Repo
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          path: u-boot-build
+      - name: Generate partition.json
+        run: |
+          ./u-boot-build/spacemit-k1/gen_fwpart_norflash.sh u-boot/.config > dist/partition-mtd.json
+          cp u-boot-build/spacemit-k1/partition-sdmmc.json dist
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: dist
