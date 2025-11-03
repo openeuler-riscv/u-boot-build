@@ -1,0 +1,73 @@
+name: Zhihe A210
+
+on:
+  push:
+    paths:
+      - '.github/workflows/zhihe-a210.yml'
+      - 'zhihe-a210'
+  workflow_dispatch:
+
+jobs:
+  zhihe-a210:
+    name: Build U-Boot for Zhihe A210
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - board: zhihe_a210_dev
+            defconfig: a210_evb_defconfig
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-riscv64-linux-gnu bc bison build-essential coccinelle \
+            device-tree-compiler dfu-util efitools flex gdisk graphviz imagemagick \
+            libgnutls28-dev libguestfs-tools libncurses-dev \
+            libpython3-dev libsdl2-dev libssl-dev lz4 lzma lzma-alone openssl \
+            pkg-config python3 python3-asteval python3-coverage python3-filelock \
+            python3-pkg-resources python3-pycryptodome python3-pyelftools \
+            python3-pytest python3-pytest-xdist python3-sphinxcontrib.apidoc \
+            python3-sphinx-rtd-theme python3-subunit python3-testtools \
+            python3-venv swig uuid-dev cmake gcc
+      - name: Checkout U-Boot Source
+        uses: actions/checkout@v5
+        with:
+          repository: openeuler-riscv/u-boot.git
+          ref: zhihe-a210-vendor-2024.10
+          fetch-depth: 1
+          path: u-boot
+      - name: Checkout OpenSBI Source
+        uses: actions/checkout@v5
+        with:
+          repository: zhcomputing/opensbi.git
+          github-server-url: https://gitee.com
+          # Release develop 251101
+          ref: 236a0c5c58d7dc379bc8d6415e6dfb30bcb4528d
+          fetch-depth: 1
+          path: opensbi
+      - name: Build OpenSBI
+        run: |
+          mkdir -p build/opensbi
+          make -C opensbi/ O="$(pwd)/build/opensbi" -j $(nproc) CROSS_COMPILE=riscv64-linux-gnu- PLATFORM=generic
+      - name: Checkout This Repo
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          submodules: true
+          path: u-boot-build
+      - name: Build U-Boot
+        run: |
+          mkdir -p build/u-boot
+          make -C u-boot/ O="$(pwd)/build/u-boot" -j $(nproc) CROSS_COMPILE=riscv64-linux-gnu- ${{ matrix.defconfig }}
+          make -C u-boot/ O="$(pwd)/build/u-boot" -j $(nproc) CROSS_COMPILE=riscv64-linux-gnu- OPENSBI="$(pwd)/build/opensbi/platform/generic/firmware/fw_dynamic.bin" BINMAN_INDIRS="$(pwd)/u-boot-build/zhihe-a210/blobs"
+      - name: Collect Results
+        run: |
+          mkdir -p dist
+          cp "$(pwd)/build/u-boot/binman-emmc_boot-loader.img" "$(pwd)/dist"
+          cp "$(pwd)/u-boot-build/zhihe-a210/blobs/bootzero-rvbl.bin" "$(pwd)/dist"
+          cp "$(pwd)/build/u-boot/binman-spl-with-fit-rvbl.bin" "$(pwd)/dist"
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.board }}
+          path: dist
