@@ -15,7 +15,7 @@ jobs:
       matrix:
         include:
           - board: zhihe_a210_dev
-            defconfig: a210_evb_defconfig
+            defconfig: a210_evb_oerv_defconfig
     steps:
       - name: Install Dependencies
         run: |
