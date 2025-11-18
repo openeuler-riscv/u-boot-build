@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/zhihe-a210.yml'
-      - 'zhihe-a210'
+      - 'zhihe-a210/**'
   workflow_dispatch:
 
 jobs:

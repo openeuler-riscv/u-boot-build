@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/eswin-eic7700.yml'
-      - 'eswin-eic7700'
+      - 'eswin-eic7700/**'
   workflow_dispatch:
 
 jobs:

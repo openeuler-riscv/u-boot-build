@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/starfive-jh7110.yml'
+      - 'starfive-jh7110/**'
   workflow_dispatch:
 
 jobs:
