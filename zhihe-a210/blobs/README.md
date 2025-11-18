@@ -35,4 +35,6 @@ http://8.149.140.24/downloads/release/zhihesdk/develop/zhihesdk-develop-a210_evb
 
 ## Version
 
+- 20251117 下载最新固件
+- 20251114 下载最新固件
 - 20251103 下载最新固件
