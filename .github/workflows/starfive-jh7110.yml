@@ -28,7 +28,8 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: openeuler-riscv/u-boot.git
-          ref: starfive-jh7110-upstream
+          # starfive-jh7110-upstream @ 20251126
+          ref: 90e3284e5c307727fb3240d36a9bd6b9354e0cb8
           fetch-depth: 1
           path: u-boot
       - name: Checkout OpenSBI Source
