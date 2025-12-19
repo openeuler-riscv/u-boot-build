@@ -5,10 +5,9 @@ on:
     paths:
       - '.github/workflows/spacemit-k1.yml'
       - 'spacemit-k1/**'
-  workflow_dispatch:
 
 jobs:
-  spacemit-k1:
+  build:
     name: Build U-Boot for SpacemiT K1
     runs-on: ubuntu-latest
     steps:
@@ -71,3 +70,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: dist
+  release:
+    name: Release Firmware for SpacemiT K1
+    needs: build
+    uses: ./.github/workflows/artifact-release.yml
+    permissions:
+      contents: write
+    secrets: inherit
+    with:
+      tag_name: release-spacemit-k1
+      release_name: Boot Firmware for SpacemiT K1
+      run_id: ${{github.run_id}}

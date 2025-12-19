@@ -10,8 +10,6 @@ jobs:
   build:
     name: Build U-Boot for ESWin EIC7700
     runs-on: ubuntu-latest
-    outputs:
-      artifact_ids: ${{ steps.upload-artifacts.outputs.artifact-id }}
     strategy:
       matrix:
         include:
