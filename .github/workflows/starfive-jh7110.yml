@@ -5,10 +5,9 @@ on:
     paths:
       - '.github/workflows/starfive-jh7110.yml'
       - 'starfive-jh7110/**'
-  workflow_dispatch:
 
 jobs:
-  starfive-jh7110:
+  build:
     name: Build U-Boot for StarFive JH7110
     runs-on: ubuntu-latest
     steps:
@@ -100,3 +99,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: dist
+  release:
+    name: Release Firmware for StarFive JH7110
+    needs: build
+    uses: ./.github/workflows/artifact-release.yml
+    permissions:
+      contents: write
+    secrets: inherit
+    with:
+      tag_name: release-starfive-jh7110
+      release_name: Boot Firmware for StarFive JH7110
+      run_id: ${{github.run_id}}
