@@ -15,8 +15,7 @@ jobs:
   artifact-release:
     name: Release with Artifacts
     runs-on: ubuntu-latest
-    # if: github.ref == 'refs/heads/master'
-    if: github.ref == 'refs/heads/enable_release'
+    if: github.ref == 'refs/heads/master'
     permissions:
       contents: write
     steps:
