@@ -5,10 +5,9 @@ on:
     paths:
       - '.github/workflows/zhihe-a210.yml'
       - 'zhihe-a210/**'
-  workflow_dispatch:
 
 jobs:
-  zhihe-a210:
+  build:
     name: Build U-Boot for Zhihe A210
     runs-on: ubuntu-latest
     strategy:
@@ -72,3 +71,14 @@ jobs:
         with:
           name: ${{ matrix.board }}
           path: dist
+  release:
+    name: Release Firmware for Zhihe A210
+    needs: build
+    uses: ./.github/workflows/artifact-release.yml
+    permissions:
+      contents: write
+    secrets: inherit
+    with:
+      tag_name: release-zhihe-a210
+      release_name: Boot Firmware for Zhihe A210
+      run_id: ${{github.run_id}}
