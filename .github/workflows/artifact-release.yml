@@ -1,0 +1,53 @@
+on:
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
+      release_name:
+        required: true
+        type: string
+      run_id:
+        required: true
+        type: string
+
+jobs:
+  artifact-release:
+    name: Release with Artifacts
+    runs-on: ubuntu-latest
+    # if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/enable_release'
+    permissions:
+      contents: write
+    steps:
+      - name: Fetch Artifact
+        uses: actions/download-artifact@v5
+        with:
+          run-id: ${{inputs.run_id}}
+          merge-multiple: true
+      - name: Update Tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{inputs.tag_name}}',
+              sha: context.sha
+            }).catch(err => {
+              if (err.status !== 422) throw err;
+              github.rest.git.updateRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'tags/${{inputs.tag_name}}',
+                sha: context.sha
+              });
+            })
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{inputs.release_name}}
+          tag_name: ${{inputs.tag_name}}
+          body: "TBD"
+          files: ./*
+          make_latest: false

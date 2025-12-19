@@ -85,40 +85,12 @@ jobs:
           path: u-boot-build/eswin-eic7700/out/bootloader-${{ matrix.board }}.bin
   release:
     name: Release Firmware for ESWin EIC7700
-    runs-on: ubuntu-latest
     needs: build
-    # if: github.ref == 'refs/heads/master'
-    if: github.ref == 'refs/heads/enable_release'
+    uses: ./.github/workflows/artifact-release.yml
     permissions:
       contents: write
-    steps:
-      - name: Fetch Artifact
-        uses: actions/download-artifact@v5
-        with:
-          merge-multiple: true
-      - name: Update Tag
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/release-eswin-eic7700',
-              sha: context.sha
-            }).catch(err => {
-              if (err.status !== 422) throw err;
-              github.rest.git.updateRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'tags/release-eswin-eic7700',
-                sha: context.sha
-              });
-            })
-      - name: Publish Release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: Boot Firmware for ESWin EIC7700
-          tag_name: release-eswin-eic7700
-          body: "TBD"
-          files: ./*
-          make_latest: false
+    secrets: inherit
+    with:
+      tag_name: release-eswin-eic7700
+      release_name: Boot Firmware for ESWin EIC7700
+      run_id: ${{github.run_id}}
