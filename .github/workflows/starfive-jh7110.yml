@@ -90,11 +90,15 @@ jobs:
           dd if=build/boofs.vfat of="${IMG_FILE}" bs=512 seek=16384
       - name: Collect Results
         run: |
-          mkdir dist
-          cp firmware_updater.sd.img dist
-          cp build/u-boot/spl/u-boot-spl.bin.normal.out dist
-          cp build/u-boot/u-boot.itb dist
-          cp build/u-boot/u-boot-env-default.bin dist
+          STAGING_DIR="$(pwd)/staging"
+          DIST_DIR="$(pwd)/dist"
+          mkdir -p "${STAGING_DIR}"
+          mkdir -p "${DIST_DIR}"
+          cp firmware_updater.sd.img "${DIST_DIR}"
+          cp build/u-boot/spl/u-boot-spl.bin.normal.out "${STAGING_DIR}"
+          cp build/u-boot/u-boot.itb "${STAGING_DIR}"
+          cp build/u-boot/u-boot-env-default.bin "${STAGING_DIR}"
+          cd "${STAGING_DIR}"; zip -r "${DIST_DIR}/bl-starfive-jh7110.zip" .; cd ..
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:

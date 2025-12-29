@@ -48,15 +48,6 @@ jobs:
           make -C u-boot -j $(nproc) CROSS_COMPILE=riscv64-linux-gnu- k1_defconfig
           make -C u-boot -j $(nproc) CROSS_COMPILE=riscv64-linux-gnu-
           make -C u-boot -j $(nproc) CROSS_COMPILE=riscv64-linux-gnu- u-boot-initial-env
-      - name: Collect Results
-        run: |
-          mkdir -p dist
-          cp opensbi/build/platform/generic/firmware/fw_dynamic.itb dist
-          cp u-boot/u-boot.itb dist
-          cp u-boot/u-boot-env-default.bin dist
-          cp u-boot/FSBL.bin dist
-          cp u-boot/bootinfo_spinor.bin dist
-          cp u-boot/bootinfo_sd.bin dist
       - name: Checkout This Repo
         uses: actions/checkout@v5
         with:
@@ -64,8 +55,22 @@ jobs:
           path: u-boot-build
       - name: Generate partition.json
         run: |
-          ./u-boot-build/spacemit-k1/gen_fwpart_norflash.sh u-boot/.config > dist/partition-mtd.json
-          cp u-boot-build/spacemit-k1/partition-sdmmc.json dist
+          STAGING_DIR="$(pwd)/staging"
+          mkdir -p "${STAGING_DIR}"
+          ./u-boot-build/spacemit-k1/gen_fwpart_norflash.sh u-boot/.config > "${STAGING_DIR}/partition-mtd.json"
+          cp u-boot-build/spacemit-k1/partition-sdmmc.json "${STAGING_DIR}"
+      - name: Collect Results
+        run: |
+          STAGING_DIR="$(pwd)/staging"
+          DIST_DIR="$(pwd)/dist"
+          mkdir -p "${DIST_DIR}"
+          cp opensbi/build/platform/generic/firmware/fw_dynamic.itb "${STAGING_DIR}"
+          cp u-boot/u-boot.itb "${STAGING_DIR}"
+          cp u-boot/u-boot-env-default.bin "${STAGING_DIR}"
+          cp u-boot/FSBL.bin "${STAGING_DIR}"
+          cp u-boot/bootinfo_spinor.bin "${STAGING_DIR}"
+          cp u-boot/bootinfo_sd.bin "${STAGING_DIR}"
+          cd "${STAGING_DIR}"; zip -r "${DIST_DIR}/bl-spacemit-k1.zip" .; cd ..
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:

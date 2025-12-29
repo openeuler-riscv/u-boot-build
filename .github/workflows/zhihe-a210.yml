@@ -62,10 +62,14 @@ jobs:
           make -C u-boot/ O="$(pwd)/build/u-boot" -j $(nproc) CROSS_COMPILE=riscv64-linux-gnu- OPENSBI="$(pwd)/build/opensbi/platform/generic/firmware/fw_dynamic.bin" BINMAN_INDIRS="$(pwd)/u-boot-build/zhihe-a210/blobs"
       - name: Collect Results
         run: |
-          mkdir -p dist
-          cp "$(pwd)/build/u-boot/binman-emmc_boot-loader.img" "$(pwd)/dist"
-          cp "$(pwd)/u-boot-build/zhihe-a210/blobs/bootzero-rvbl.bin" "$(pwd)/dist"
-          cp "$(pwd)/build/u-boot/binman-spl-with-fit-rvbl.bin" "$(pwd)/dist"
+          STAGING_DIR="$(pwd)/staging"
+          DIST_DIR="$(pwd)/dist"
+          mkdir -p "${STAGING_DIR}"
+          mkdir -p "${DIST_DIR}"
+          cp "$(pwd)/build/u-boot/binman-emmc_boot-loader.img" "${STAGING_DIR}"
+          cp "$(pwd)/u-boot-build/zhihe-a210/blobs/bootzero-rvbl.bin" "${STAGING_DIR}"
+          cp "$(pwd)/build/u-boot/binman-spl-with-fit-rvbl.bin" "${STAGING_DIR}"
+          cd "${STAGING_DIR}"; zip -r "${DIST_DIR}/bl-zhihe-a210.zip" .; cd ..
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
