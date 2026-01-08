@@ -38,7 +38,8 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: openeuler-riscv/u-boot.git
-          ref: eswin-eic7700-vendor-2024.01
+          # branch eswin-eic7700-vendor-2024.01 as of 20260108
+          ref: f26033d0bc9e894f7fc36c8a948014e66bd191d7
           fetch-depth: 1
           path: u-boot
       - name: Checkout OpenSBI Source
