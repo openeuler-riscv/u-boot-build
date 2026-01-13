@@ -10,6 +10,18 @@ jobs:
   build:
     name: Build U-Boot for SpacemiT K1
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - suffix: ""
+            opensbi_repo: bianbu-linux/opensbi.git
+            opensbi_hostserv: https://gitee.com
+            opensbi_ref: k1-bl-v2.2.4-release
+          - suffix: "-rva23"
+            opensbi_repo: ruyisdk-debian-riscv/k1-opensbi
+            opensbi_hostserv: https://github.com
+            # Branch k1-rva23 as of 20260113
+            opensbi_ref: d54467316c351163895f8b5031886866f61ffa03
     steps:
       - name: Install Dependencies
         run: |
@@ -33,9 +45,9 @@ jobs:
       - name: Checkout OpenSBI Source
         uses: actions/checkout@v5
         with:
-          repository: bianbu-linux/opensbi.git
-          github-server-url: https://gitee.com
-          ref: k1-bl-v2.2.4-release
+          repository: ${{ matrix.opensbi_repo }}
+          github-server-url: ${{ matrix.opensbi_hostserv }}
+          ref: ${{ matrix.opensbi_ref }}
           fetch-depth: 1
           path: opensbi
       - name: Build OpenSBI
@@ -70,10 +82,11 @@ jobs:
           cp u-boot/FSBL.bin "${STAGING_DIR}"
           cp u-boot/bootinfo_spinor.bin "${STAGING_DIR}"
           cp u-boot/bootinfo_sd.bin "${STAGING_DIR}"
-          cd "${STAGING_DIR}"; zip -r "${DIST_DIR}/bl-spacemit-k1.zip" .; cd ..
+          cd "${STAGING_DIR}"; zip -r "${DIST_DIR}/bl-spacemit-k1${{ matrix.suffix }}.zip" .; cd ..
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
+          name: k1-firmware${{ matrix.suffix }}
           path: dist
   release:
     name: Release Firmware for SpacemiT K1
