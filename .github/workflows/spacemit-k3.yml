@@ -21,8 +21,8 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: openeuler-riscv/u-boot.git
-          # branch spacemit-k3-vendor-2022.10 as of 20260610
-          ref: 5589dd7b5b064d07bf51d9b1110795e6dcb82c61
+          # branch spacemit-k3-vendor-2022.10 as of 20260907
+          ref: cf395e05d4b6dc5641545c47b3afedf73254e092
           fetch-depth: 1
           path: u-boot
       - name: Build U-Boot
@@ -59,7 +59,7 @@ jobs:
         with:
           repository: bianbu-linux/opensbi.git
           github-server-url: https://gitee.com
-          ref: k3-br-v1.0.2
+          ref: k3-br-v1.0.7
           fetch-depth: 1
           path: opensbi
       - name: Build OpenSBI
@@ -93,15 +93,15 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: openeuler-riscv/spacemit-k3-firmware-esos.git
-          # branch spacemit-k3-esos as of 20260608
-          ref: 521c91585a066482c81f7eb794734073b04fbb4b
+          # branch spacemit-k3-esos as of 20260904
+          ref: 4005e21aaf2b45a29e6d5bc586fcd843593f928e
           fetch-depth: 1
           path: esos
       - name: Checkout esos-lite Source
         uses: actions/checkout@v6
         with:
           repository: openeuler-riscv/spacemit-k3-firmware-esos-lite.git
-          # branch spacemit-k3-esos-lite as of 20260608
+          # branch spacemit-k3-esos-lite as of 20260904
           ref: 0400dad1b722dd9c235852a27f6396cc8e83076a
           fetch-depth: 1
           path: esos/components/esos-lite
